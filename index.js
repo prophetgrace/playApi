@@ -2,7 +2,8 @@ const http = require('http')
 const express = require('express');
 const bodyParser  = require('body-parser');
 const app = express();
-const db = require('./db/db');
+const db_trips = require('./db/db_trips');
+const db_bookings =require('./db/db_bookings')
 const PORT = 3000;
 
 //Configuring body parser to use json
@@ -19,56 +20,55 @@ app.get('/', (req,res) =>{
 // get all todos
 app.get('/api/v1/trips', (req, res) => {
     res.status(200).send({
-      success: 'true',
-      message: 'Trips retrieved successfully',
-      trips: db
+      status: 'success',
+      data: db_trips
     })
+    return res.status(404).send({
+      status: 'error',
+      error: 'Bookings dont exist',
+     });
   });
 
-app.listen(PORT, (req,res) =>{
-    console.log('api running on port 3000')
-})
+//Creating new trip
+// app.post('/api/v1/trips', (req, res) => {
+//     if(!req.body.title) {
+//       return res.status(400).send({
+//         success: 'false',
+//         message: 'title is required'
+//       });
+//     } else if(!req.body.description) {
+//       return res.status(400).send({
+//         success: 'false',
+//         message: 'description is required'
+//       });
+//     }
+//    const trip = {
+//      id: db_trips.length + 1,
+//      title: req.body.title,
+//      description: req.body.description
+//    }
+//    db_trips.push(trips);
+//    return res.status(201).send({
+//      success: 'true',
+//      message: 'trip added successfully',
+//      trip
+//    })
+//   });
 
-//CReating new todo
-app.post('/api/v1/trips', (req, res) => {
-    if(!req.body.title) {
-      return res.status(400).send({
-        success: 'false',
-        message: 'title is required'
-      });
-    } else if(!req.body.description) {
-      return res.status(400).send({
-        success: 'false',
-        message: 'description is required'
-      });
-    }
-   const trip = {
-     id: db.length + 1,
-     title: req.body.title,
-     description: req.body.description
-   }
-   db.push(trips);
-   return res.status(201).send({
-     success: 'true',
-     message: 'trip added successfully',
-     trip
-   })
-  });
-//Get a single todo
+//Get a single trip
   app.get('/api/v1/trips/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
-    db.map((trip) => {
+    db_trips.map((trip) => {
       if (trip.id === id) {
         return res.status(200).send({
-          success: 'true',
-          message: 'todo retrieved successfully',
-          trip,
+          status: 'success',
+          data: trip
         });
       } 
   });
    return res.status(404).send({
-     success: 'false',
-     message: 'todo does not exist',
+     status: 'error',
+     error: 'Trip doesnot exist',
     });
   });
 
@@ -76,21 +76,85 @@ app.post('/api/v1/trips', (req, res) => {
   app.delete('/api/v1/trips/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
   
-    db.map((trip, index) => {
+    db_trips.map((trip, index) => {
       if (trip.id === id) {
-         db.splice(index, 1);
+         db_trips.splice(index, 1);
          return res.status(200).send({
-           success: 'true',
-           message: 'Todo deleted successfuly',
+           status: 'success',
+           message: 'Trip deleted successfuly',
          });
       }
     });
   
   
       return res.status(404).send({
-        success: 'false',
-        message: 'todo not found',
+        status: 'error',
+        error: 'Item for deletion not found',
       });
   
    
   });
+
+
+
+// get all bookings
+app.get('/api/v1/bookings', (req, res) => {
+  res.status(200).send({
+    status: 'success',
+    data: db_bookings
+  })
+
+  return res.status(404).send({
+    status: 'error',
+    error: 'Bookings not found',
+  });
+});
+
+
+//Get a single trip
+app.get('/api/v1/bookings/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  db_bookings.map((booking) => {
+    if (booking.id === id) {
+      return res.status(200).send({
+        status: 'success',
+        data: booking,
+      });
+    } 
+});
+ return res.status(404).send({
+   status: 'error',
+   error: 'Booking does not exist',
+  });
+});
+
+//Delete todo bby id
+app.delete('/api/v1/bookings/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  db_bookings.map((booking, index) => {
+    if (booking.id === id) {
+       db_bookings.splice(index, 1);
+       return res.status(200).send({
+         status: 'success',
+         message: 'Booking deleted successfuly',
+       });
+    }
+  });
+
+
+    return res.status(404).send({
+      status: 'error',
+      error: 'Booking to delete not found',
+    });
+
+ 
+});
+
+
+
+
+//Running a server
+app.listen(PORT, (req,res) =>{
+    console.log('api running on port 3000')
+})
