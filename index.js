@@ -3,7 +3,8 @@ const express = require('express');
 const bodyParser  = require('body-parser');
 const app = express();
 const db_trips = require('./db/db_trips');
-const db_bookings =require('./db/db_bookings')
+const db_bookings =require('./db/db_bookings');
+const jwt = require('jsonwebtoken');
 const PORT = 3000;
 
 //Configuring body parser to use json
@@ -17,7 +18,10 @@ app.get('/', (req,res) =>{
     })
 })
 
-// get all todos
+
+
+
+// get all trips
 app.get('/api/v1/trips', (req, res) => {
     res.status(200).send({
       status: 'success',
@@ -30,30 +34,98 @@ app.get('/api/v1/trips', (req, res) => {
   });
 
 //Creating new trip
-// app.post('/api/v1/trips', (req, res) => {
-//     if(!req.body.title) {
-//       return res.status(400).send({
-//         success: 'false',
-//         message: 'title is required'
-//       });
-//     } else if(!req.body.description) {
-//       return res.status(400).send({
-//         success: 'false',
-//         message: 'description is required'
-//       });
-//     }
-//    const trip = {
-//      id: db_trips.length + 1,
-//      title: req.body.title,
-//      description: req.body.description
-//    }
-//    db_trips.push(trips);
-//    return res.status(201).send({
-//      success: 'true',
-//      message: 'trip added successfully',
-//      trip
-//    })
-//   });
+app.post('/api/v1/trips', (req, res) => {
+  
+    if(!req.body.seating_capacity) {
+      return res.status(400).send({
+        success: 'false',
+        message: 'Seating capacity is required'
+      });
+    } else if(!req.body.bus_licence_number) {
+      return res.status(400).send({
+        success: 'false',
+        message: 'Bus licence Number is required'
+      });
+    }else if(!req.body.origin){
+      return res.status(400).send({
+        success: 'false',
+        message: 'Origin is required'
+      });
+    }else if(!req.body.destination){
+      return res.status(400).send({
+        success: 'false',
+        message: 'Destination is required'
+      });
+    }else if(!req.body.trip_date){
+      return res.status(400).send({
+        success: 'false',
+        message: 'Trip date is required'
+      });
+    }else if(!req.body.fare){
+      return res.status(400).send({
+        success: 'false',
+        message: 'fare is required'
+      });
+    }else if(!req.body.status){
+      return res.status(400).send({
+        success: 'false',
+        message: 'status is required'
+      });
+    }
+   const trip = {
+      id: db_trips.length + 1,
+      seating_capacity:req.body.seating_capacity,
+      bus_licence_number: req.body.bus_licence_number,
+      origin: req.body.origin,
+      destination: req.body.destination,
+      trip_date: req.body.trip_date,
+      fare: req.body.fare,
+      status: req.body.status
+   }
+   db_trips.push(trip);
+   return res.status(201).send({
+     success: 'true',
+     message: 'trip added successfully',
+     trip
+   })
+  });
+
+//create a booking
+//Creating new trip
+app.post('/api/v1/bookings', (req, res) => {
+  
+  if(!req.body.trip_id) {
+    return res.status(400).send({
+      success: 'false',
+      message: 'Trip id is required'
+    });
+  } else if(!req.body.user_id){
+    return res.status(400).send({
+      success: 'false',
+      message: 'User is required'
+    });
+  }else if(!req.body.created_on){
+    return res.status(400).send({
+      success: 'false',
+      message: 'Date is required'
+    });
+  }
+  
+ const booking = {
+    id: db_bookings.length + 1,
+    trip_id:req.body.trip_id,
+    user_id: req.body.user_id,
+    created_on:req.body.created_on
+    
+ }
+ db_bookings.push(booking);
+ return res.status(201).send({
+   success: 'true',
+   message: 'Booking is successfull',
+   booking
+ })
+});
+
 
 //Get a single trip
   app.get('/api/v1/trips/:id', (req, res) => {
@@ -72,7 +144,7 @@ app.get('/api/v1/trips', (req, res) => {
     });
   });
 
-  //Delete todo bby id
+  //Delete trips by id
   app.delete('/api/v1/trips/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
   
@@ -111,7 +183,7 @@ app.get('/api/v1/bookings', (req, res) => {
 });
 
 
-//Get a single trip
+//Get a single bookings
 app.get('/api/v1/bookings/:id', (req, res) => {
   const id = parseInt(req.params.id, 10);
   db_bookings.map((booking) => {
@@ -128,7 +200,7 @@ app.get('/api/v1/bookings/:id', (req, res) => {
   });
 });
 
-//Delete todo bby id
+//Delete bookings by id
 app.delete('/api/v1/bookings/:id', (req, res) => {
   const id = parseInt(req.params.id, 10);
 
